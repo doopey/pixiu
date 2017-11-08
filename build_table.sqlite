@@ -1,0 +1,7 @@
+create table msg_record (
+    [id]            integer PRIMARY KEY autoincrement,
+    [mid]          varchar(20) UNIQUE,
+    [send_id]         varchar (10),
+    [send_time]      long,
+    [msg]          varchar(50)
+);
