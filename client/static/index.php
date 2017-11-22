@@ -15,6 +15,7 @@
 <div id="doc">
     <div id="chat">
         <div id="message" class="message">
+            <div style="text-align:center"><a href="#" id="moreHistory">查看更多历史消息</a></div>
             <div id="onlinecount" style="background:#EFEFF4; font-size:12px; margin-top:10px; margin-left:10px; color:#666;">
             </div>
         </div>

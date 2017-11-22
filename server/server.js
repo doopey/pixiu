@@ -33,11 +33,15 @@ io.on('connection', function(socket) {
 
     socketUsers[socket.id] = {'socket': socket};
 
-
     // 监听用户退出
     socket.on('disconnect', function(socket) {
         console.log("有用户退出");
         delete socketUsers[socket.id];
+    });
+
+    // 获取更多历史消息
+    socket.on('moreHistory', function(obj) {
+        getMoreHistory(socket, obj.firstMid);
     });
 
 });
@@ -68,6 +72,35 @@ function broadcast() {
             }
             lastMid = maxId;
             io.emit("message", objList);
+        });
+        conn.release();
+    });
+}
+
+// 获取更多历史消息，倒序排列
+function getMoreHistory(socket, firstMid) {
+    var sql = 'SELECT mid, msg, type, send_time FROM msg_record WHERE mid < ' + firstMid + ' ORDER BY mid DESC LIMIT 20';
+    pool.getConnection(function (err, conn) {
+        if (err) {
+            console.log('[getConnection ERROR] - ', err.message);
+            return;
+        }
+        conn.query(sql, function (err, rows) {
+            if (err) {
+                console.log('[SELECT ERROR] - ', err.message);
+                return;
+            }
+            var objList = [];
+            for (var i = 0; i < rows.length; i ++) {
+                var obj = {
+                    mid : rows[i].mid,
+                    msg : rows[i].msg,
+                    type: rows[i].type, // 0表示普通文本，1表示图片
+                    sendTime: rows[i].send_time
+                }
+                objList.push(obj);
+            }
+            socket.emit("moreHistory", objList);
         });
         conn.release();
     });
