@@ -4,6 +4,7 @@ import requests
 import time
 import MySQLdb
 import sys
+import json
 
 class MysqlHelper(object):
     def __init__(self, db_host, db_user, db_pw, db_name):
@@ -76,11 +77,11 @@ class FetchProcessor(object):
         if response.status_code != 200:
             print "status_code: %d url: %s" %(response.status_code, url)
             return has_new_msg
-        json = response.json()
-        if json.get("code") != 1000:
-            print "json code: %d url: %s" %(json.get("code"), url)
+        res_json = response.json()
+        if res_json.get("code") != 1000:
+            print "json code: %d url: %s" %(res_json.get("code"), url)
             return has_new_msg
-        data = json.get("data")
+        data = res_json.get("data")
         data.sort(key = lambda x:x["mid"])
         fetch_pass = MysqlHelper(self.db_host, self.db_user, self.db_pw, self.db_name)
         for d in data:
@@ -90,17 +91,29 @@ class FetchProcessor(object):
                 if mid > self.max_record_mid:
                     msg = d.get("msg")
                     msg_type = 0
-                    if isinstance(msg, map): # 提取图片
+                    if isinstance(msg, dict): # 提取图片
                         if "url" in msg:
                             msg = msg.get("url")
                             msg_type = 1
                     if isinstance(msg, (str, unicode)) and '"' in msg:
                         msg = msg.replace('"', "'")
                     send_time = d.get("send_time")
-                    # print mid, msg, send_time
+                    # 处理extp字段
+                    extp = json.loads(d.get("extp"))
+                    msg_with_reply = {}
+                    if extp:
+                        objects = extp.get("objects")
+                        if objects:
+                            for obj in objects:
+                                if "msg" in obj:
+                                    extp_msg = obj.get("msg")
+                                    extp_nick_name = obj.get("nick_name")
+                                    msg = extp_nick_name + ": " + extp_msg + "-------" + msg # 简单的拼凑
+
                     sql = 'INSERT INTO msg_record (mid, send_id, msg, send_time, type) VALUES("%s", "%s", "%s", %s, "%s")' %(mid, send_id, msg, send_time, msg_type)
                     try:
                         fetch_pass.execute(sql);
+                        print msg
                         has_new_msg = True
                     except:
                         # print "has an error sql: %s" %(sql)
