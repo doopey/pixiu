@@ -37,7 +37,7 @@ class FetchProcessor(object):
             self.db_pw = "root"
             self.db_name = "moer"
         else:
-            self.db_host = "120.78.219.206"
+            self.db_host = "127.0.0.1"
             self.db_user = "root"
             self.db_pw = "F2C99e549973"
             self.db_name = "moer"
@@ -46,7 +46,7 @@ class FetchProcessor(object):
         self.gid = "16827291860993"
         self.show_type = "3"
         self.ts = self.get_ts()
-        self.count = 100
+        self.count = 200
         self.lord_id = "105745323"
         self.max_record_mid = self.get_max_record_mid() # 保存数据库中最大的mid
 
@@ -58,7 +58,6 @@ class FetchProcessor(object):
         for idx in range(row_num):
              max_mid = fetch_pass.fetchone()[0]
         fetch_pass.close_connect()
-        print max_mid
         return max_mid
 
     def get_ts(self):
@@ -94,13 +93,11 @@ class FetchProcessor(object):
                     send_time = d.get("send_time")
                     # print mid, msg, send_time
                     sql = 'INSERT INTO msg_record (mid, send_id, msg, send_time) VALUES("%s", "%s", "%s", %s)' %(mid, send_id, msg, send_time)
-                    print msg
-                    print ""
                     try:
                         fetch_pass.execute(sql);
                         has_new_msg = True
                     except:
-                        print "has an error sql: %s" %(sql)
+                        # print "has an error sql: %s" %(sql)
                         continue
         fetch_pass.close_connect()
         return has_new_msg
@@ -113,7 +110,7 @@ class FetchProcessor(object):
         return 60
 
 if __name__ == '__main__':
-    proc = FetchProcessor("dev")
+    proc = FetchProcessor("prod")
     has_new_msg = False
     while True:
         proc.ts = proc.get_ts()
