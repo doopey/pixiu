@@ -74,7 +74,7 @@ function broadcast() {
 }
 
 function pushHistoryMessage(socket) {
-    var sql = 'SELECT * FROM (SELECT mid, msg, type, send_time FROM msg_record ORDER BY mid DESC LIMIT 10) b ORDER BY mid';
+    var sql = 'SELECT * FROM (SELECT mid, msg, type, send_time FROM msg_record ORDER BY mid DESC LIMIT 20) b ORDER BY mid';
     pool.getConnection(function (err, conn) {
         if (err) {
             console.log('[getConnection ERROR] - ', err.message);

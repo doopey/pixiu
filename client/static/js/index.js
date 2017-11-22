@@ -24,6 +24,9 @@
                 // 更新页面
                 for (var i = 0; i < objList.length; i ++) {
                     var contentDiv = '<div>' + objList[i].msg + '</div>';
+                    if (objList[i].type == 1) { // 显示图片
+                        contentDiv = '<div><img src="' + objList[i].msg + '"></div>';
+                    }
                     var usernameDiv = '<span>弱弱</span>';
                     var section = d.createElement('section');
                     section.className = 'service';
