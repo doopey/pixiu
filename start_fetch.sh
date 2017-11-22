@@ -1,1 +1,1 @@
-cd fetcher; nohup python fetch_processor.py >> ~/log/fetch.log 2>&1 &
+cd fetcher; nohup python fetch_processor.py prod >> ~/log/fetch.log 2>&1 &

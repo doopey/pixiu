@@ -43,7 +43,7 @@ io.on('connection', function(socket) {
 });
 
 function broadcast() {
-    var sql = 'SELECT mid, msg FROM msg_record WHERE mid > ' + lastMid;
+    var sql = 'SELECT mid, msg, type, send_time FROM msg_record WHERE mid > ' + lastMid;
     pool.getConnection(function (err, conn) {
         if (err) {
             console.log('[getConnection ERROR] - ', err.message);
@@ -59,7 +59,9 @@ function broadcast() {
             for (var i = 0; i < rows.length; i ++) {
                 var obj = {
                     mid : rows[i].mid,
-                    msg : rows[i].msg
+                    msg : rows[i].msg,
+                    type: rows[i].type, // 0表示普通文本，1表示图片
+                    sendTime: rows[i].send_time
                 }
                 objList.push(obj);
                 maxId = rows[i].mid;
@@ -72,7 +74,7 @@ function broadcast() {
 }
 
 function pushHistoryMessage(socket) {
-    var sql = 'SELECT * FROM (SELECT mid, msg FROM msg_record ORDER BY mid DESC LIMIT 10) b ORDER BY mid';
+    var sql = 'SELECT * FROM (SELECT mid, msg, type, send_time FROM msg_record ORDER BY mid DESC LIMIT 10) b ORDER BY mid';
     pool.getConnection(function (err, conn) {
         if (err) {
             console.log('[getConnection ERROR] - ', err.message);
@@ -88,7 +90,9 @@ function pushHistoryMessage(socket) {
             for (var i = 0; i < rows.length; i ++) {
                 var obj = {
                     mid : rows[i].mid,
-                    msg : rows[i].msg
+                    msg : rows[i].msg,
+                    type: rows[i].type, // 0表示普通文本，1表示图片
+                    sendTime: rows[i].send_time
                 }
                 maxId = rows[i].mid;
                 objList.push(obj);

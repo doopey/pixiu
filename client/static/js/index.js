@@ -13,7 +13,7 @@
         console.log("init");
 
         // 连接websocket后端服务器
-        socket = io.connect("ws://localhost:61111");
+        socket = io.connect("ws://120.78.219.206:61111");
         socket.onopen(function() {
             console.log("握手成功");
         });

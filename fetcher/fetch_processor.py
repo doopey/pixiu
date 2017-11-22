@@ -3,6 +3,7 @@
 import requests
 import time
 import MySQLdb
+import sys
 
 class MysqlHelper(object):
     def __init__(self, db_host, db_user, db_pw, db_name):
@@ -88,11 +89,16 @@ class FetchProcessor(object):
                 mid = d.get("mid")
                 if mid > self.max_record_mid:
                     msg = d.get("msg")
+                    msg_type = 0
+                    if isinstance(msg, map): # 提取图片
+                        if "url" in msg:
+                            msg = msg.get("url")
+                            msg_type = 1
                     if isinstance(msg, (str, unicode)) and '"' in msg:
                         msg = msg.replace('"', "'")
                     send_time = d.get("send_time")
                     # print mid, msg, send_time
-                    sql = 'INSERT INTO msg_record (mid, send_id, msg, send_time) VALUES("%s", "%s", "%s", %s)' %(mid, send_id, msg, send_time)
+                    sql = 'INSERT INTO msg_record (mid, send_id, msg, send_time, type) VALUES("%s", "%s", "%s", %s, "%s")' %(mid, send_id, msg, send_time, msg_type)
                     try:
                         fetch_pass.execute(sql);
                         has_new_msg = True
@@ -110,7 +116,10 @@ class FetchProcessor(object):
         return 60
 
 if __name__ == '__main__':
-    proc = FetchProcessor("prod")
+    if len(sys.argv) <= 1:
+        print "缺少参数，退出程序"
+        exit()
+    proc = FetchProcessor(sys.argv[1]) # 本地
     has_new_msg = False
     while True:
         proc.ts = proc.get_ts()
