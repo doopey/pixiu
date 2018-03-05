@@ -2,15 +2,30 @@
  * Created by chris on 17-11-13.
  */
 
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
-var mysql = require('mysql');
-var pool = mysql.createPool({
+var mysqlPools = [{
+    // 生产环境
     host     : '127.0.0.1',
     user     : 'root',
     password : 'F2C99e549973',
     database : 'moer'
+}, {
+    // 测试环境
+    host     : '127.0.0.1',
+    user     : 'root',
+    password : 'root',
+    database : 'moer'
+}]
+
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var mysql = require('mysql');
+var pool = mysql.createPool(mysqlPools[0]); // 默认生产环境，如果带有dev参数，则是测试环境
+
+process.argv.forEach(function(val, index, array) {
+    if (index == 2 && val == "dev") { // 判断第一个参数是不是dev，若是，则是测试环境
+        pool = mysql.createPool(mysqlPools[1]);
+    }
 });
 
 app.get('/', function(req, res) {
@@ -65,7 +80,7 @@ function broadcast() {
                     mid : rows[i].mid,
                     msg : rows[i].msg,
                     type: rows[i].type, // 0表示普通文本，1表示图片
-                    sendTime: rows[i].send_time
+                    sendTimestamp: rows[i].send_time,
                 }
                 objList.push(obj);
                 maxId = rows[i].mid;
@@ -96,7 +111,7 @@ function getMoreHistory(socket, firstMid) {
                     mid : rows[i].mid,
                     msg : rows[i].msg,
                     type: rows[i].type, // 0表示普通文本，1表示图片
-                    sendTime: rows[i].send_time
+                    sendTimestamp: rows[i].send_time,
                 }
                 objList.push(obj);
             }
@@ -125,7 +140,7 @@ function pushHistoryMessage(socket) {
                     mid : rows[i].mid,
                     msg : rows[i].msg,
                     type: rows[i].type, // 0表示普通文本，1表示图片
-                    sendTime: rows[i].send_time
+                    sendTimestamp: rows[i].send_time,
                 }
                 maxId = rows[i].mid;
                 objList.push(obj);
