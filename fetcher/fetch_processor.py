@@ -45,7 +45,7 @@ class FetchProcessor(object):
             self.db_name = "moer"
         # "https://www.moer.cn/v1/group/api/msg/history?gid=16827291860993&show_type=3&ts=1510130041000&count=3"
         self.url_prefix = "https://www.moer.cn/v1/group/api/msg/history"
-        self.gid = "16827291860993"
+        self.gid = "36830678417409"
         self.show_type = "3"
         self.ts = self.get_ts()
         self.count = 200
@@ -77,7 +77,10 @@ class FetchProcessor(object):
         if response.status_code != 200:
             print "status_code: %d url: %s" %(response.status_code, url)
             return has_new_msg
-        res_json = response.json()
+        try:
+	    res_json = response.json()
+        except:
+            return has_new_msg
         if res_json.get("code") != 1000:
             print "json code: %d url: %s" %(res_json.get("code"), url)
             return has_new_msg
