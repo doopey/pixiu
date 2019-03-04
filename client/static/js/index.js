@@ -9,13 +9,15 @@
         w = window,
         msgObj = d.getElementById("message"),
         socket;
+    const NotificationInstance = Notification || window.Notification;
+    const ServerUrl = "http://39.106.206.2";
     init();
 
     function init() {
         console.log("init");
 
         // 连接websocket后端服务器
-        socket = io.connect("ws://120.78.219.206:61111");
+        socket = io.connect("ws://39.106.206.2:61111");
         // socket = io.connect("ws://localhost:61111");
         socket.onopen(function() {
             console.log("握手成功");
@@ -24,6 +26,7 @@
         // 监听新消息
         socket.on('message', function(objList) {
             if (objList.length > 0) {
+                var notification = "";
                 // 更新页面
                 for (var i = 0; i < objList.length; i ++) {
                     var contentDiv = '<div>' + objList[i].msg + '</div>';
@@ -36,7 +39,11 @@
                     section.innerHTML = '<span>' + sendTime + '</span>' + contentDiv;
                     section.mid = objList[i].mid;
                     msgObj.appendChild(section);
+                    notification += objList[i].msg;
                 }
+                // 发送通知
+                notify(notification)
+
             }
         });
 
@@ -60,6 +67,43 @@
             }
         });
 
+    }
+
+    function notify(notification) {
+        if (!!NotificationInstance) {
+            NotificationInstance.requestPermission(function (permission) {
+                console.log('用户是否允许通知： ', permission === 'granted' ? '允许' : '拒绝');
+                if (permission === 'granted') {
+                    const n = new Notification('弱弱：', {
+                        body: notification,
+                        // icon: 'https://2ue.github.io/images/common/avatar.png',
+                        // data: {
+                        //     url: ServerUrl
+                        // },
+                        tag: ServerUrl
+                    });
+
+                    n.onshow = function () {
+                        console.log('通知显示了！');
+                        console.log(n);
+                    }
+                    n.onclick = function (e) {
+                        // 可以直接通过实例的方式获取data内自定义的数据
+                        // 也可以通过访问回调参数e来获取data的数据
+                        window.open(n.tag, '_blank');
+                        n.close();
+                    }
+                    n.onclose = function () {
+                        // console.log('你墙壁了我！！！');
+                    }
+                    n.onerror = function (err) {
+                        console.log('出错了，小伙子在检查一下吧');
+                        throw err;
+                    }
+                }
+            });
+
+        }
     }
 
     // 获取更多历史消息
